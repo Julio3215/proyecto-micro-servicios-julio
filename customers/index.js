@@ -1,0 +1,19 @@
+const express = require('express');
+const { PORT } = require('./config');
+const { databaseConnection } = require('./database');
+const expressApp = require('./express-app');
+
+const StartServer = async () => {
+    const app = express();
+    await databaseConnection();
+    await expressApp(app);
+
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Listening to port ${PORT}`);
+    }).on('error', (err) => {
+        console.log(err);
+        process.exit();
+    })
+}
+
+StartServer();
