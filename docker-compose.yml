@@ -1,52 +1,62 @@
-services:
-
+ervices:
+  # --- API GATEWAY ---
   gateway:
     build: ./gateway
     ports:
       - "8000:8000"
     environment:
-      PORT: 8000
+      - PORT=8000
     depends_on:
       - customers
       - products
       - shopping
 
+  # --- MICROSERVICIOS ---
   customers:
     build: ./customers
     environment:
-      PORT: 8001
-      DB_URL: mongodb://db-customers:27017/customers_db
+      - PORT=8001
+      - DB_URL=mongodb://db-customers:27017/customers_db
     depends_on:
       - db-customers
 
   products:
     build: ./products
     environment:
-      PORT: 8002
-      DB_URL: mongodb://db-products:27017/products_db
+      - PORT=8002
+      - DB_URL=mongodb://db-products:27017/products_db
+      - DB_CUSTOMERS_URL=mongodb://db-customers:27017/customers_db
     depends_on:
       - db-products
+      - db-customers
 
   shopping:
     build: ./shopping
     environment:
-      PORT: 8003
-      DB_URL: mongodb://db-shopping:27017/shopping_db
+      - PORT=8003
+      - DB_URL=mongodb://db-shopping:27017/shopping_db
     depends_on:
       - db-shopping
 
+  # --- BASES DE DATOS INDEPENDIENTES ---
   db-customers:
     image: mongo:7.0
+    ports:
+      - "27017:27017"
     volumes:
       - mongo_customers_data:/data/db
 
   db-products:
     image: mongo:7.0
+    ports:
+      - "27018:27017"
     volumes:
       - mongo_products_data:/data/db
 
   db-shopping:
     image: mongo:7.0
+    ports:
+      - "27019:27017"
     volumes:
       - mongo_shopping_data:/data/db
 

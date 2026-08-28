@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  product-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: product_microservice
+    restart: always
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - PORT=${PORT}
+      - DB_URL=${DB_URL}
+      - DB_CUSTOMERS_URL=${DB_CUSTOMERS_URL}
+      - APP_SECRET=${APP_SECRET}
+    env_file:
+      - .env
+    depends_on:
+      - product-db
+
+  product-db:
+    image: mongo:latest
+    container_name: product_mongodb
+    restart: always
+    ports:
+      - "27018:27017"
+    volumes:
+      - product_data:/data/db
+
+volumes:
+  product_data:
+
+networks:
+  default:
+    name: microservices_net
+    external: true

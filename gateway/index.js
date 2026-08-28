@@ -1,18 +1,19 @@
 const express = require('express');
-const { PORT } = require('./src/config');
-const expressApp = require('./src/express-app');
+const proxy = require('express-http-proxy');
+const cors = require('cors');
+const app = express();
 
-const StartServer = async () => {
-  const app = express();
+const PORT = process.env.PORT || 8000;
 
-  await expressApp(app);
+app.use(cors());
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`API Gateway corriendo en el puerto ${PORT}`);
-  }).on('error', (err) => {
-    console.log(err);
-    process.exit(1);
-  });
-};
+// Acepta tanto '/customers' como '/customer'
+app.use('/customers', proxy('http://customer_microservice:8001'));
+app.use('/customer', proxy('http://customer_microservice:8001'));
 
-StartServer();
+app.use('/products', proxy('http://product_microservice:8002'));
+app.use('/shopping', proxy('http://shopping_microservice:8003'));
+
+app.listen(PORT, () => {
+  console.log(`API Gateway corriendo en el puerto ${PORT}`);
+});

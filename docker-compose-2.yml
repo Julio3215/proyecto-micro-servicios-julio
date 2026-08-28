@@ -1,0 +1,74 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: db
+    restart: unless-stopped
+    networks:
+      - app-net
+    volumes:
+      - gpdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: secret
+
+  web:
+    image: nginx:latest
+    container_name: web
+    restart: unless-stopped
+    networks:
+      - app-net
+    ports:
+      - "5000:80"
+
+  api:
+    image: node:22-alpine
+    container_name: api
+    restart: unless-stopped
+    networks:
+      - app-net
+    ports:
+      - "3000:3000"
+    working_dir: /app
+    volumes:
+      - ./customers:/app
+    environment:
+      DB_HOST: db
+    command: tail -f /dev/null
+
+  c-customers:
+    image: node:22-alpine
+    container_name: c-customers
+    restart: unless-stopped
+    networks:
+      - app-net
+    ports:
+      - "3001:3001"
+    # 1. Definimos la carpeta de trabajo interna del contenedor
+    working_dir: /app
+    # Mapeamos directamente la subcarpeta del microservicio
+    volumes:
+      - ./customers:/app
+    environment:
+      DB_HOST: db
+      MONGO_URI: mongodb://mongo-db:27017/customers_db
+    command: tail -f /dev/null
+
+  mongo-db:
+    image: mongo:latest
+    container_name: mongo-db
+    restart: unless-stopped
+    networks:
+      - app-net
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+networks:
+  app-net:
+    external: true
+
+volumes:
+  gpdata:
+    external: true
+  mongo-data:
+
