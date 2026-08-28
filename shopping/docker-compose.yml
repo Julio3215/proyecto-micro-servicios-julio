@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  shopping-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shopping_microservice
+    restart: always
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - PORT=${PORT}
+      - DB_URL=${DB_URL}
+      - APP_SECRET=${APP_SECRET}
+    env_file:
+      - .env
+    depends_on:
+      - shopping-db
+
+  shopping-db:
+    image: mongo:latest
+    container_name: shopping_mongodb
+    restart: always
+    ports:
+      - "27019:27017"
+    volumes:
+      - shopping_data:/data/db
+
+volumes:
+  shopping_data:
+
+networks:
+  default:
+     name: microservices_net
+     external: true
